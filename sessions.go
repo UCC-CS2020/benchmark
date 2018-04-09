@@ -16,15 +16,12 @@ func isAlreadyLoggedIn(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := store.Get(r, "id")
 		if err != nil {
-			fmt.Println("err getting session", err)
 			http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 			return
 		}
 
 		if !session.IsNew {
-			fmt.Println("new session")
 			if _, err := getUserFromSession(r); err != nil {
-				fmt.Println("cant get from session", err)
 				r.Method = "GET"
 				http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 				return
@@ -41,13 +38,11 @@ func isLoggedIn(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := store.Get(r, "id")
 		if err != nil {
-			fmt.Println("err getting session", err)
 			http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 			return
 		}
 
 		if session.IsNew {
-			fmt.Println("new session")
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 			return
 		}

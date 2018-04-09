@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	html "html/template"
+	"net/http"
+
 	"github.com/BurntSushi/toml"
 	"github.com/UCCNetworkingSociety/go-ldap"
 	"github.com/go-chi/chi"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
-	html "html/template"
-	"net/http"
-	"time"
 )
 
 var (
@@ -29,9 +29,10 @@ type config struct {
 
 func init() {
 	store.Options = &sessions.Options{
-		Domain:   "localhost",
+		Domain:   "127.0.0.1",
 		MaxAge:   60 * 10,
 		HttpOnly: true,
+		Path:     "/",
 	}
 }
 
@@ -53,6 +54,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
 	w.Header().Set("Content-Type", "text/html")
 	if err := loginTemplate.ExecuteTemplate(w, "main", nil); err != nil {
 		fmt.Println(err)
@@ -82,9 +84,7 @@ func loginSubmit(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 		return
 	}
-	fmt.Fprintf(w, "Redirecting to home page...")
-	time.Sleep(time.Second)
-	http.Redirect(w, r, "/table", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "/upload", http.StatusFound)
 }
 
 func file(w http.ResponseWriter, r *http.Request) {
@@ -117,6 +117,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.HandleFunc("/", home)
+
 	r.Route("/login", func(r chi.Router) {
 		r.HandleFunc("/", login)
 		r.With(isAlreadyLoggedIn).Post("/post", loginSubmit)
